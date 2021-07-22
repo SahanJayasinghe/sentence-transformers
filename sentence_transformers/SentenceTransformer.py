@@ -724,6 +724,7 @@ class SentenceTransformer(nn.Sequential):
                     self._save_checkpoint(checkpoint_path, checkpoint_save_total_limit, global_step)
 
 
+            logger.info("Epoch {} - training_loss: {}".format(epoch + 1, loss_value.item()))
             self._eval_during_training(evaluator, output_path, save_best_model, epoch, -1, callback)
 
         if evaluator is None and output_path is not None:   #No evaluator, but output path: save final model version
@@ -763,6 +764,10 @@ class SentenceTransformer(nn.Sequential):
                 self.best_score = score
                 if save_best_model:
                     self.save(output_path)
+
+    def get_best_score(self):
+        if hasattr(self, 'best_score'): return self.best_score
+        else return -1
 
     def _save_checkpoint(self, checkpoint_path, checkpoint_save_total_limit, step):
         # Store new checkpoint
