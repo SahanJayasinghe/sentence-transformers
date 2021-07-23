@@ -714,7 +714,7 @@ class SentenceTransformer(nn.Sequential):
                 global_step += 1
 
                 if evaluation_steps > 0 and training_steps % evaluation_steps == 0:
-                    self._eval_during_training(evaluator, output_path, save_best_model, epoch, training_steps, callback)
+                    self._eval_during_training(evaluator, loss_models, output_path, save_best_model, epoch, training_steps, callback)
 
                     for loss_model in loss_models:
                         loss_model.zero_grad()
@@ -725,7 +725,7 @@ class SentenceTransformer(nn.Sequential):
 
 
             logger.info("Epoch {} - training_loss: {}".format(epoch + 1, loss_value.item()))
-            self._eval_during_training(evaluator, output_path, save_best_model, epoch, -1, callback)
+            self._eval_during_training(evaluator, loss_models, output_path, save_best_model, epoch, -1, callback)
 
         if evaluator is None and output_path is not None:   #No evaluator, but output path: save final model version
             self.save(output_path)
@@ -748,7 +748,7 @@ class SentenceTransformer(nn.Sequential):
             os.makedirs(output_path, exist_ok=True)
         return evaluator(self, output_path)
 
-    def _eval_during_training(self, evaluator, output_path, save_best_model, epoch, steps, callback):
+    def _eval_during_training(self, evaluator, loss_models, output_path, save_best_model, epoch, steps, callback):
         """Runs evaluation during the training"""
         eval_path = output_path
         if output_path is not None:
@@ -764,6 +764,9 @@ class SentenceTransformer(nn.Sequential):
                 self.best_score = score
                 if save_best_model:
                     self.save(output_path)
+                    for loss_model in loss_models:
+                        if hasattr(loss_model, 'set_best_state') and callable(loss_model.set_best_state):
+                            loss_model.set_best_state()
 
     def get_best_score(self):
         if hasattr(self, 'best_score'): return self.best_score

@@ -1,6 +1,8 @@
+import os
 import torch
 from torch import nn, Tensor
 from typing import Iterable, Dict
+from copy import deepcopy
 from ..SentenceTransformer import SentenceTransformer
 import logging
 
@@ -76,3 +78,18 @@ class ClassificationLoss(nn.Module):
         loss = torch.mean(torch.sum(loss_matrix, 1)) * (-1)
         loss.requires_grad_(True)
         return loss
+    
+    def set_best_state(self):
+        self.best_state = deepcopy(self.state_dict())
+
+    def save_current_state(self, path: str, filename: str = 'classifier_state_dict.pt'):
+        os.makedirs(path, exist_ok=True)
+        torch.save(self.state_dict(), os.path.join(path, filename))
+    
+    def save_best_state(self, path: str, filename: str = 'classifier_state_dict.pt'):
+        if hasattr(self, 'best_state'):
+            os.makedirs(path, exist_ok=True)
+            torch.save(self.best_state, os.path.join(path, filename))
+    
+    def load_classifier_state(self, path: str):
+        self.load_state_dict(torch.load(path))
