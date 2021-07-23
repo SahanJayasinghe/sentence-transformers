@@ -770,7 +770,7 @@ class SentenceTransformer(nn.Sequential):
 
     def get_best_score(self):
         if hasattr(self, 'best_score'): return self.best_score
-        else return -1
+        else: return -1
 
     def _save_checkpoint(self, checkpoint_path, checkpoint_save_total_limit, step):
         # Store new checkpoint
