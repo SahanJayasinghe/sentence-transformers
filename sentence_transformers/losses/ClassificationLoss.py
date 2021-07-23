@@ -80,16 +80,35 @@ class ClassificationLoss(nn.Module):
         return loss
     
     def set_best_state(self):
-        self.best_state = deepcopy(self.state_dict())
+        """
+        store the state of the last layer parameters: ['classifier.weight', 'classifier.bias']
+        in best_state class attribute
+        """
+        self.best_state = {key: self.state_dict()[key] for key in list(self.state_dict().keys())[-2:]}
+        # self.best_state = deepcopy(self.state_dict())
 
     def save_current_state(self, path: str, filename: str = 'classifier_state_dict.pt'):
+        """
+        save the state of the last layer (classifier) parameters: ['classifier.weight', 'classifier.bias']
+        """
         os.makedirs(path, exist_ok=True)
-        torch.save(self.state_dict(), os.path.join(path, filename))
+        classifier_state = {key: self.state_dict()[key] for key in list(self.state_dict().keys())[-2:]}
+        torch.save(classifier_state, os.path.join(path, filename))
     
     def save_best_state(self, path: str, filename: str = 'classifier_state_dict.pt'):
+        """
+        save the best_state class attribute in a .pt file
+        """
         if hasattr(self, 'best_state'):
             os.makedirs(path, exist_ok=True)
             torch.save(self.best_state, os.path.join(path, filename))
     
     def load_classifier_state(self, path: str):
-        self.load_state_dict(torch.load(path))
+        """
+        load the last layer (classifier) state into nn.Module state
+        """
+        state_dict_copy = deepcopy(self.state_dict())
+        classifier_state = torch.load(path)
+        for key in list(classifier_state.keys()):
+            state_dict_copy[key] = classifier_state[key]
+        self.load_state_dict(state_dict_copy)
