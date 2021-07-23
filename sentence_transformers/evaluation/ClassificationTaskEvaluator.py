@@ -6,7 +6,7 @@ import logging
 from ..util import batch_to_device
 import os
 import numpy as np
-from sklearn.metrics import f1_score, accuracy_score
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 # from torchmetrics.functional import accuracy, f1
 # import csv
 
@@ -47,6 +47,8 @@ class ClassificationTaskEvaluator(SentenceEvaluator):
             pred_result = np.append(pred_result, torch.argmax(prediction, dim=1).to('cpu').numpy(), axis=0)
 
         acc = accuracy_score(labels, pred_result)
+        precision_macro = precision_score(labels, pred_result, average='macro')
+        recall_macro = recall_score(labels, pred_result, average='macro')
         f1_micro = f1_score(labels, pred_result, average='micro')
         f1_macro = f1_score(labels, pred_result, average='macro')
 
@@ -57,4 +59,7 @@ class ClassificationTaskEvaluator(SentenceEvaluator):
         # f1_micro = f1(pred_result_tensor, labels_tensor, average='micro')
         # f1_macro = f1(pred_result_tensor, labels_tensor, average='macro', num_classes=self.num_classes)
 
-        return {'accuracy': acc, 'f1_micro': f1_micro, 'f1_macro': f1_macro}
+        return {
+            'accuracy': acc, 'precision_macro': precision_macro, 'recall_macro': recall_macro,
+            'f1_micro': f1_micro, 'f1_macro': f1_macro
+        }
