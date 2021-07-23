@@ -37,14 +37,14 @@ class ClassificationTaskEvaluator(SentenceEvaluator):
         self.dataloader.collate_fn = model.smart_batching_collate
         for step, batch in enumerate(self.dataloader):
             features, label_ids = batch
-            labels = np.append(labels, label_ids.numpy(), axis=0)
+            labels = np.append(labels, label_ids.to('cpu').numpy(), axis=0)
             for idx in range(len(features)):
                 features[idx] = batch_to_device(features[idx], model.device)
             label_ids = label_ids.to(model.device)
             with torch.no_grad():
                 _, prediction = self.classification_layer(features, labels=None)
 
-            pred_result = np.append(pred_result, torch.argmax(prediction, dim=1).numpy(), axis=0)
+            pred_result = np.append(pred_result, torch.argmax(prediction, dim=1).to('cpu').numpy(), axis=0)
 
         acc = accuracy_score(labels, pred_result)
         f1_micro = f1_score(labels, pred_result, average='micro')
