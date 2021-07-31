@@ -18,7 +18,7 @@ class ClassificationLoss(nn.Module):
                  sentence_embedding_dimension: int,
                  num_classes: int,
                  use_custom_loss: bool = False,
-                 opposite_class_loss_weight: int = 2):
+                 opposite_class_loss_weight: float = 2.0):
         super(ClassificationLoss, self).__init__()
         self.model = model
         self.num_classes = num_classes
